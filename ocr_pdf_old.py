@@ -19,11 +19,21 @@ pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
 
 
 # ===== FUNÇÕES =====
-def process_image(args):
-    page_number, image = args
+def process_page(page_number: int, PDF_PATH: str = None):
+    """Processa uma única página e retorna (numero_pagina, bytes_pdf)"""
+
+    pages = convert_from_path(
+        PDF_PATH,
+        dpi=DPI,
+        poppler_path=POPPLER_PATH,
+        first_page=page_number,
+        last_page=page_number
+    )
+
+    page = pages[0]
 
     pdf_bytes = pytesseract.image_to_pdf_or_hocr(
-        image,
+        page,
         lang="por",
         extension="pdf"
     )
@@ -33,37 +43,29 @@ def process_image(args):
 
 def ocr_pdf(PDF_PATH: str, OUTPUT_PATH: str = None):
 
-    print("Convertendo PDF para imagens...")
-    pages = convert_from_path(
-        PDF_PATH,
-        dpi=DPI,
-        poppler_path=POPPLER_PATH
-    )
-
-    total_pages = len(pages)
+    info = pdfinfo_from_path(PDF_PATH, poppler_path=POPPLER_PATH)
+    total_pages = info["Pages"]
     results = {}
 
-    print("Iniciando OCR...")
-
     with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-
         futures = {
-            executor.submit(process_image, (i+1, pages[i])): i
-            for i in range(total_pages)
+            executor.submit(process_page, i, PDF_PATH): i
+            for i in range(1, total_pages + 1)
         }
 
-        for future in tqdm(as_completed(futures), total=total_pages):
+        for future in tqdm(as_completed(futures), total=total_pages, desc="OCR"):
             page_number, pdf_bytes = future.result()
             results[page_number] = pdf_bytes
 
-    print("Unindo páginas...")
+    print("\nUnindo páginas corretamente...")
     writer = PdfWriter()
 
     for i in range(1, total_pages + 1):
-        reader = PdfReader(io.BytesIO(results[i]))
+        pdf_bytes = results[i]
+        reader = PdfReader(io.BytesIO(pdf_bytes))
         writer.add_page(reader.pages[0])
 
     with open(f'{OUTPUT_PATH}/pdf_pesquisavel.pdf', "wb") as f:
         writer.write(f)
 
-    print("Finalizado.")
+    print("PDF pesquisável criado com sucesso!")

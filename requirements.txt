@@ -6,3 +6,4 @@ easyocr
 pypdf
 google-genai
 customtkinter
+python-dotenv
