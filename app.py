@@ -27,14 +27,14 @@ def calcula_center_janela(largura_janela, altura_janela):
     largura_tela, altura_tela = tamanho_tela()
 
     x = (largura_tela // 2) - (largura_janela // 2)
-    y = (altura_tela // 2) - (altura_janela // 2)
+    y = (altura_tela // 2) - (altura_janela // 2) - 50
     return x, y
 
 
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
-        largura_janela = 900
+        largura_janela = 800
         altura_janela = 600
         x, y = calcula_center_janela(largura_janela, altura_janela)
         fonte = ("Arial", 12)
