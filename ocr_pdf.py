@@ -8,13 +8,15 @@ from pypdf import PdfReader, PdfWriter
 import io
 from dotenv import load_dotenv
 
-# ===== CONFIG =====
 load_dotenv()
+
+# ===== CONFIG =====
 POPPLER_PATH = os.environ.get("POPPLER_PATH")
 TESSERACT_PATH = os.environ.get("TESSERACT_PATH")
-DPI = int(os.environ.get("DPI"))
-MAX_WORKERS = int(os.environ.get("MAX_WORKERS"))
-TESSERACT_PREFIX = os.environ.get("TESSERACT_PREFIX")
+
+DPI = int(os.environ.get("DPI", 200))
+MAX_WORKERS = int(os.environ.get("MAX_WORKERS", 6))
+
 pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
 
 
